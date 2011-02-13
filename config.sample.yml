@@ -13,21 +13,16 @@ filter: "*"
 
 # directories to synchronize !
 directories:
-  - # project
-    local:          '/Users/vince/www/u2y'
-    remote:         '/data/u2y'
-    ignore:         ['/web', '/log/*', '/cache/*', '/config/ProjectConfiguration.class.php', '/data/contracts/*', '/data/fixtures/*', '/data/invoices/*', '/data/invoices_recall/*', '/plugins/.*']
-    remote_ignore:  []
-  - # web backend
-    local:          '/Users/vince/www/u2y/web/backend'
-    remote:         '/web/backend'
-    ignore:         ['index.php', 'backend_dev.php', '/images/logos/*', '/images/logos/*']
-    remote_ignore:  ['.htaccess', 'backend.php']
-  - # web frontend
-    local:          '/Users/vince/www/u2y/web/frontend'
-    remote:         '/web/frontend'
-    ignore:         ['/big', '/en', '/flash', '/medium', '/smal', '/quotations', '/images/gallery', '/images/logos', '/images/profiles', '/images/signatures/*']
+  - # dir1
+    local:          '/path/to/dir1'
+    remote:         '/remote/path/to/dir1'
+    ignore:         ['/directo_to_ignore', '/file_to_ignore.php', '/otherdir/*', '*.gif', '/dir42/*.png']
     remote_ignore:  ['.htaccess']
+  - # dir2
+    local:          '/path/to/dir2'
+    remote:         '/remote/path/to/dir2'
+    ignore:         []
+    remote_ignore:  []
 
 # DIR FTP command result line parser
 dir_ftp_line_parser:
