@@ -8,6 +8,8 @@ import re
 import fnmatch
 import time
 import getpass
+import sys
+import getopt
 
 import yaml
 
@@ -18,11 +20,21 @@ import yaml_config
 logger = None
 yaml_reader = None
 
-def main():
+def main(argv):
   global logger, reader
   
   init_logger()
   
+  try:                                
+    opts, args = getopt.getopt(argv, "d:d", ["directories="]) 
+  except getopt.GetoptError:                                  
+    sys.exit(2)
+  
+  directories = []
+  for j, arg in enumerate(opts):
+    if arg[0] == '--directories':
+      directories = arg[1].split(',')
+
   yaml_reader = yaml_config.ConfigReader('config.yml')
 
   # connect to the FTP server
@@ -39,14 +51,18 @@ def main():
   
   # Browse directories to synchronize et sync it over FTP
   
-  for i, directories in enumerate(yaml_reader.get('directories')):
-    local_dir = directories.get('local')
-    remote_dir = directories.get('remote')
-    ignore = directories.get('ignore')
-    remote_ignore = directories.get('remote_ignore')
+  for i, directory in enumerate(yaml_reader.get('directories')):
     
-    ftp_sync = FtpSync(ftp, local_dir, remote_dir, ignore, remote_ignore, logger, yaml_reader)
-    ftp_sync.synchronize()
+    if len(directories) == 0 or directory in directories:
+      d = yaml_reader.get('directories:%s' % (directory))
+      
+      local_dir = d.get('local')
+      remote_dir = d.get('remote')
+      ignore = d.get('ignore')
+      remote_ignore = d.get('remote_ignore')
+    
+      ftp_sync = FtpSync(ftp, local_dir, remote_dir, ignore, remote_ignore, logger, yaml_reader)
+      ftp_sync.synchronize()
 
   # close the connection to the FTP server
   ftp.quit()
@@ -302,4 +318,4 @@ class FtpSync():
   
 
 if __name__ == "__main__":
-  main()
+  main(sys.argv[1:])
