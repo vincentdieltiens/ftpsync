@@ -1,0 +1,45 @@
+# FTP login informations
+ftp:
+  host: "ftp.address.tld"
+  port: 21
+  user: "username"
+  password: "mypassword"  # let empty to prompt at executing
+
+# if strict is true, the program will delete remote files/directories that are not in local
+strict: true
+# if confirm_delete is true, the program will ask confirm before delete a file/directory
+confirm_delete: true
+filter: "*"
+
+# directories to synchronize !
+directories:
+  - # project
+    local:          '/Users/vince/www/u2y'
+    remote:         '/data/u2y'
+    ignore:         ['/web', '/log/*', '/cache/*', '/config/ProjectConfiguration.class.php', '/data/contracts/*', '/data/fixtures/*', '/data/invoices/*', '/data/invoices_recall/*', '/plugins/.*']
+    remote_ignore:  []
+  - # web backend
+    local:          '/Users/vince/www/u2y/web/backend'
+    remote:         '/web/backend'
+    ignore:         ['index.php', 'backend_dev.php', '/images/logos/*', '/images/logos/*']
+    remote_ignore:  ['.htaccess', 'backend.php']
+  - # web frontend
+    local:          '/Users/vince/www/u2y/web/frontend'
+    remote:         '/web/frontend'
+    ignore:         ['/big', '/en', '/flash', '/medium', '/smal', '/quotations', '/images/gallery', '/images/logos', '/images/profiles', '/images/signatures/*']
+    remote_ignore:  ['.htaccess']
+
+# DIR FTP command result line parser
+dir_ftp_line_parser:
+  format:           "%(permissions)s\\s+%(inode)s\\s+%(user)s\\s+%(group)s\\s+%(size)s\\s+%(month)s\\s+%(day)s\\s+(?:%(time)s|%(year)s)\\s+%(filename)s"
+  fields:
+    permissions : '(?P<permissions>(?:d|s|-)(?:r|-)(?:w|-)(?:x|-)(?:r|-)(?:w|-)(?:x|s|-)(?:r|-)(?:w|-)(?:x|-))'
+    inode       : '(?P<inode>[0-9]+)'
+    user        : '(?P<user>[a-zA-Z0-9\-_]+)'
+    group       : '(?P<group>[a-zA-Z0-9\-_]+)'
+    size        : '(?P<size>[0-9]+)'
+    month       : '(?P<month>[a-zA-Z]{3})'
+    day         : '(?P<day>[0-9]+)'
+    time        : '(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2})'
+    year         : '(?P<year>[0-9]{4})'
+    filename    : '(?P<filename>.*)'
