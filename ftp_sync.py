@@ -141,7 +141,7 @@ class FtpSync():
         elif os.path.islink(local_file): # file is a symlink
           None
         else: # file is a regular file
-          self.upload_file(local_file, remote_dir)
+          self._upload_file(local_file, remote_dir)
       else:
         if os.path.isdir(local_file): # file is a directory
           if remote_file.get('time') < time.localtime(os.path.getmtime(local_file)):
@@ -227,7 +227,7 @@ class FtpSync():
     cwd = os.getcwd()
     try:
       file = open(local_file, 'rb')
-      ftp.storbinary("STOR %s" % (local_file), file)
+      self.ftp.storbinary("STOR %s" % (local_file), file)
       file.close()
       self.logger.info('"%s/%s" uploaded into "%s"' % (cwd, local_file, remote_dir))
     except error_perm, e:
@@ -265,11 +265,7 @@ class FtpSync():
       if re.search("(\[|\]|\*|\?)", ignore_rule):
         if os.sep in ignore_rule:
           #print "is path fnmatch"
-          base = base_dir
-          if ignore_rule[0] != "/":
-            base += "/"
-          #print current_dir+"/"+filename+" vs "+base+ignore
-          if fnmatch.fnmatch(os.getcwd()+"/"+filename, base+ignore_rule):
+          if fnmatch.fnmatch(os.path.join(os.getcwd(), filename), os.path.join(base_dir, ignore_rule)):
             return True
         else: 
           #print "base fnmatch("+filename+", "+ignore+")"
@@ -277,10 +273,7 @@ class FtpSync():
             return True
       else:
         if os.sep in ignore_rule:
-          base = base_dir
-          if ignore_rule[0] != "/":
-            base += "/"
-          if base+ignore_rule == os.getcwd()+"/"+filename:
+          if os.path.join(base_dir, ignore_rule) == os.path.join(os.getcwd(), filename):
             return True
         else:
           if filename == ignore_rule:
