@@ -7,6 +7,7 @@ import os.path
 import re
 import fnmatch
 import time
+import getpass
 
 import yaml
 
@@ -26,7 +27,12 @@ def main():
 
   # connect to the FTP server
   ftp = FTP(yaml_reader.get('ftp:host'))
-  ftp.login(yaml_reader.get('ftp:user'), yaml_reader.get('ftp:password'))
+  if yaml_reader.exist('ftp:password') and yaml_reader.get('ftp:password') != None:
+    password = yaml_reader.get('ftp:password')
+  else:
+    password = getpass.getpass("Enter your FTP password : ")
+
+  ftp.login(yaml_reader.get('ftp:user'), password)
   
   # Get working directory
   working_dir = os.getcwd()

@@ -28,4 +28,10 @@ class ConfigReader:
             value = value[key]
         
         return value
-    
+        
+    def exist(self, path):
+        try:
+            self.get(path)
+            return True
+        except Exception, e:
+            return False

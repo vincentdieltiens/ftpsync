@@ -3,7 +3,9 @@ ftp:
   host: "ftp.address.tld"
   port: 21
   user: "username"
-  password: "mypassword"  # let empty to prompt at executing
+  password: "mypassword"  
+  # let empty if you want enter it a starting
+  #password: 
 
 # if strict is true, the program will delete remote files/directories that are not in local
 strict: true
