@@ -157,7 +157,7 @@ class FtpSync():
           except error_perm, e:
             self.logger.error('Can\'t create the directory "%s/%s" : %s' % (remote_dir, local_file, str(e)))
         else: # file is a regular file
-          self._upload_file(local_file, remote_dir)
+          self._upload_file(local_file, remote_dir, new=True)
       else:
         if os.path.islink(local_file): # file is a symlink
           real_file = os.path.abspath(os.path.join(os.path.dirname(local_file), os.readlink(local_file)))
@@ -171,7 +171,7 @@ class FtpSync():
               #self.logger.ok('Ftp directory "%s/%s" is up-to-date' % (remote_dir, remote_file.get('filename')))
         else: # file is a regular file
           if remote_file.get('size') != os.path.getsize(local_file) or remote_file.get('time') < time.localtime(os.path.getmtime(local_file)):
-            self._upload_file(local_file, remote_dir)
+            self._upload_file(local_file, remote_dir, new=False)
     
     ##
     ## delete files that are on the FTP server and not on local
@@ -258,14 +258,17 @@ class FtpSync():
     return None
   
   
-  def _upload_file(self, local_file, remote_dir):
+  def _upload_file(self, local_file, remote_dir, new=False):
     remote_filename = local_file
     cwd = os.getcwd()
     try:
       file = open(local_file, 'rb')
       self.ftp.storbinary("STOR %s" % (local_file), file)
       file.close()
-      self.logger.info('"%s/%s" uploaded into "%s/%s"' % (cwd, local_file, self.ftp.pwd(), remote_dir))
+      if new:
+        self.logger.ok('"%s/%s" created and uploaded into "%s/%s"' % (cwd, local_file, self.ftp.pwd(), remote_dir))
+      else:
+        self.logger.ok('"%s/%s" replaced into "%s/%s"' % (cwd, local_file, self.ftp.pwd(), remote_dir))
     except error_perm, e:
       self.logger.error('Can\'t upload "%s/%s" into "%s" : %s' % (cwd, local_file, remote_dir, str(e)))
       file.close()
