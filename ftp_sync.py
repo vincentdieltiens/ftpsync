@@ -113,6 +113,9 @@ class FtpSync():
   
   def _synchronize(self, local_dir, remote_dir):
     
+    previous_local_dir = os.getcwd()
+    previous_remote_dir = self.ftp.pwd();
+    
     # Go to local dir
     os.chdir(local_dir)
     
@@ -148,7 +151,18 @@ class FtpSync():
       remote_file = self._search_local_file_in_remote_files(local_file, remote_files)
       if remote_file == None:
         if os.path.islink(local_file): # file is a symlink
-          None
+          real_file = os.path.abspath(os.path.join(os.path.dirname(local_file), os.readlink(local_file)))
+          self.logger.warning('"%s/%s" is a Link to %s' % (local_dir, local_file, real_file))
+          link = os.readlink(local_file)
+          if not os.path.exists(real_file):
+            self.logger.error('the destination "%s" doesn\'t exists' % (real_file))
+            continue
+            
+          if os.path.isdir(link):
+            self.ftp.mkd(local_file)
+            dirs_to_sync.append(local_file)
+          else:
+            self._upload_file(local_file, remote_dir, new=True)
         elif os.path.isdir(local_file): # file is a directory
           self.logger.info('Creating remote directory "%s/%s"' % (remote_dir, local_file))
           try:
@@ -162,11 +176,20 @@ class FtpSync():
         if os.path.islink(local_file): # file is a symlink
           real_file = os.path.abspath(os.path.join(os.path.dirname(local_file), os.readlink(local_file)))
           self.logger.warning('"%s/%s" is a Link to %s' % (local_dir, local_file, real_file))
-          #dirs_to_sync.append(local_file)
+          if not os.path.exists(real_file):
+            self.logger.error('the destination "%s" doesn\'t exists' % (real_file))
+            continue
+          
+          link = os.readlink(local_file)
+          if os.path.isdir(link):
+            dirs_to_sync.append(local_file)
+          else:
+            if remote_file.get('size') != os.path.getsize(real_file) or remote_file.get('time') < time.localtime(os.path.getmtime(real_file)):
+              self._upload_file(local_file, remote_dir, new=False)
           None
         elif os.path.isdir(local_file): # file is a directory
           #if remote_file.get('time') < time.localtime(os.path.getmtime(local_file)):
-          dirs_to_sync.append(local_file)
+            dirs_to_sync.append(local_file)
           #else:
               #self.logger.ok('Ftp directory "%s/%s" is up-to-date' % (remote_dir, remote_file.get('filename')))
         else: # file is a regular file
@@ -214,10 +237,10 @@ class FtpSync():
       self._synchronize(local_dir2, remote_dir2)
     
     # Go up remote
-    self.ftp.cwd('..')
+    self.ftp.cwd(previous_remote_dir)
     
     # Go up local
-    os.chdir('..')
+    os.chdir(previous_local_dir)
   
   
   def _get_local_files(self):
